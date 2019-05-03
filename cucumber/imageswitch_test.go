@@ -1,9 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"os"
+	"strings"
 
 	"github.com/DATA-DOG/godog"
+	"github.com/jaysonesmith/imageswitch/cucumber/support"
 )
 
 type tester interface {
@@ -27,7 +30,6 @@ type acceptance struct {
 
 func FeatureContext(s *godog.Suite) {
 	var t test
-	var sc *ScenarioContext
 
 	switch os.Getenv("TEST_DEPTH") {
 	case "acceptance":
@@ -47,23 +49,44 @@ func FeatureContext(s *godog.Suite) {
 	}
 
 	s.BeforeScenario(func(interface{}) {
-		sc = NewScenarioContext()
-		t.SC = sc
+		t.SC = NewScenarioContext()
 	})
 }
 
 // Unit test level
 func (u *unit) aBaseImage(imageType string) error {
 	u.SC.BaseImageType = imageType
-	return godog.ErrPending
+
+	return nil
 }
 
-func (u *unit) thatImageIsConverted(imageType string) error {
-	return godog.ErrPending
+func (u *unit) thatImageIsConverted(desiredFormat string) error {
+	imageURL := fmt.Sprintf("https://localhost/gopher.%s", u.SC.BaseImageType)
+	// request := support.ConversionRequestBody(imageURL, desiredFormat)
+	// call the conversion function directly, for now hard code
+	response := support.ConversionResponse{
+		OriginalImage: imageURL,
+		DesiredFormat: desiredFormat,
+		NewImage:      fmt.Sprintf("https://localhost/gopher.%s", desiredFormat),
+	}
+
+	u.SC.ConversionResponse = response
+
+	return nil
 }
 
 func (u *unit) aMustBeReturned(imageType string) error {
-	return godog.ErrPending
+	convertedExtention := imageExtention(u.SC.ConversionResponse.NewImage)
+	if convertedExtention != imageType {
+		return fmt.Errorf("image conversion failed. expected: %s found: %s", imageType, convertedExtention)
+	}
+
+	return nil
+}
+
+func imageExtention(imageURL string) string {
+	s := strings.Split(imageURL, ".")
+	return s[len(s)-1]
 }
 
 // Acceptance test level

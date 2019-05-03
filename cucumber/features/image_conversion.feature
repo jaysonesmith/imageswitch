@@ -7,7 +7,7 @@ Feature: Image Conversion
         When that image is converted to a png
         Then a png must be returned
 
-    Scenario: Convert a bmp to png
-        Given a base bmp image
-        When that image is converted to a png
-        Then a png must be returned
+    Scenario: Convert a png to jpg
+        Given a base png image
+        When that image is converted to a jpg
+        Then a jpg must be returned
