@@ -19,21 +19,6 @@ type test struct {
 	SC *ScenarioContext
 }
 
-// Call functions directly
-type unit struct {
-	test
-}
-
-// Call mocked urls
-type acceptance struct {
-	test
-}
-
-// Call real urls
-type integrated struct {
-	test
-}
-
 func FeatureContext(s *godog.Suite) {
 	var t test
 
@@ -67,6 +52,11 @@ func FeatureContext(s *godog.Suite) {
 }
 
 // Unit test level
+// Call functions directly
+type unit struct {
+	test
+}
+
 func (u *unit) aBaseImage(imageType string) error {
 	u.SC.BaseImageType = imageType
 
@@ -98,6 +88,11 @@ func (u *unit) aMustBeReturned(imageType string) error {
 }
 
 // Acceptance test level
+// Call mocked urls
+type acceptance struct {
+	test
+}
+
 func (a *acceptance) aBaseImage(imageType string) error {
 	return godog.ErrPending
 }
@@ -111,6 +106,11 @@ func (a *acceptance) aMustBeReturned(imageType string) error {
 }
 
 // Integration test level
+// Call real urls
+type integrated struct {
+	test
+}
+
 func (i *integrated) aBaseImage(imageType string) error {
 	return godog.ErrPending
 }
