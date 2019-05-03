@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/DATA-DOG/godog"
 	"github.com/jaysonesmith/imageswitch/cucumber/support"
@@ -20,11 +19,18 @@ type test struct {
 	SC *ScenarioContext
 }
 
+// Call functions directly
 type unit struct {
 	test
 }
 
+// Call mocked urls
 type acceptance struct {
+	test
+}
+
+// Call real urls
+type integrated struct {
 	test
 }
 
@@ -39,6 +45,13 @@ func FeatureContext(s *godog.Suite) {
 		s.Step(`^a (\w+) must be returned$`, a.aMustBeReturned)
 
 		t.tester = a
+	case "integrated":
+		i := &integrated{test: test{SC: NewScenarioContext()}}
+		s.Step(`^a base (\w+) image$`, i.aBaseImage)
+		s.Step(`^that image is converted to a (\w+)$`, i.thatImageIsConverted)
+		s.Step(`^a (\w+) must be returned$`, i.aMustBeReturned)
+
+		t.tester = i
 	default:
 		u := &unit{test: test{SC: NewScenarioContext()}}
 		s.Step(`^a base (\w+) image$`, u.aBaseImage)
@@ -76,17 +89,12 @@ func (u *unit) thatImageIsConverted(desiredFormat string) error {
 }
 
 func (u *unit) aMustBeReturned(imageType string) error {
-	convertedExtention := imageExtention(u.SC.ConversionResponse.NewImage)
+	convertedExtention := support.ImageExtention(u.SC.ConversionResponse.NewImage)
 	if convertedExtention != imageType {
 		return fmt.Errorf("image conversion failed. expected: %s found: %s", imageType, convertedExtention)
 	}
 
 	return nil
-}
-
-func imageExtention(imageURL string) string {
-	s := strings.Split(imageURL, ".")
-	return s[len(s)-1]
 }
 
 // Acceptance test level
@@ -99,5 +107,18 @@ func (a *acceptance) thatImageIsConverted(imageType string) error {
 }
 
 func (a *acceptance) aMustBeReturned(imageType string) error {
+	return godog.ErrPending
+}
+
+// Integration test level
+func (i *integrated) aBaseImage(imageType string) error {
+	return godog.ErrPending
+}
+
+func (i *integrated) thatImageIsConverted(imageType string) error {
+	return godog.ErrPending
+}
+
+func (i *integrated) aMustBeReturned(imageType string) error {
 	return godog.ErrPending
 }
